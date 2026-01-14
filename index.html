@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#2563eb">
     <meta name="description" content="Track moods, triggers, and outcomes">
     <title>Mood Tracker</title>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/Mood-App/manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; padding: 0; }
@@ -50,7 +50,7 @@
             const registerServiceWorker = async () => {
                 if ('serviceWorker' in navigator) {
                     try {
-                        await navigator.serviceWorker.register('/sw.js');
+                        await navigator.serviceWorker.register('/Mood-App/sw.js');
                     } catch (error) {
                         console.log('Service Worker registration failed');
                     }
