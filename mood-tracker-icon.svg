@@ -1,0 +1,26 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="115" fill="#2563eb"/>
+  
+  <!-- Smile face circle -->
+  <circle cx="256" cy="230" r="140" fill="#fff" opacity="0.95"/>
+  
+  <!-- Left eye -->
+  <circle cx="215" cy="210" r="18" fill="#2563eb"/>
+  
+  <!-- Right eye -->
+  <circle cx="297" cy="210" r="18" fill="#2563eb"/>
+  
+  <!-- Smile -->
+  <path d="M 190 250 Q 256 300 322 250" 
+        stroke="#2563eb" 
+        stroke-width="14" 
+        fill="none" 
+        stroke-linecap="round"/>
+  
+  <!-- Chart bars at bottom -->
+  <rect x="140" y="400" width="40" height="70" rx="8" fill="#fff" opacity="0.9"/>
+  <rect x="200" y="370" width="40" height="100" rx="8" fill="#fff" opacity="0.9"/>
+  <rect x="260" y="390" width="40" height="80" rx="8" fill="#fff" opacity="0.9"/>
+  <rect x="320" y="360" width="40" height="110" rx="8" fill="#fff" opacity="0.9"/>
+</svg>
