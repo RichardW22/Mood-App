@@ -19,11 +19,15 @@
 
     <script type="text/babel">
         const { useState, useEffect } = React;
+        
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxU2ogAC2HyFOpecHoLBvH-T4YiURA5525ctXa1NPdy9rV1bwWHfmyNLI3XWy5Uun93Xg/exec';
 
         const MoodTracker = () => {
             const [entries, setEntries] = useState([]);
             const [showForm, setShowForm] = useState(false);
             const [showPatterns, setShowPatterns] = useState(false);
+            const [userName, setUserName] = useState('');
+            const [showNamePrompt, setShowNamePrompt] = useState(true);
             const [formData, setFormData] = useState({
                 mood: '',
                 trigger: '',
@@ -44,8 +48,20 @@
             };
 
             useEffect(() => {
+                const savedName = localStorage.getItem('mood-tracker-username');
+                if (savedName) {
+                    setUserName(savedName);
+                    setShowNamePrompt(false);
+                }
                 loadData();
             }, []);
+
+            const handleNameSubmit = () => {
+                if (userName.trim()) {
+                    localStorage.setItem('mood-tracker-username', userName.trim());
+                    setShowNamePrompt(false);
+                }
+            };
 
             const loadData = () => {
                 try {
@@ -66,6 +82,29 @@
                 }
             };
 
+            const sendToGoogleSheets = async (entry) => {
+                try {
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            name: userName,
+                            timestamp: entry.timestamp,
+                            mood: entry.mood,
+                            trigger: entry.trigger,
+                            result: entry.result,
+                            notes: entry.notes
+                        })
+                    });
+                    console.log('Data sent to Google Sheets');
+                } catch (error) {
+                    console.error('Error sending to Google Sheets:', error);
+                }
+            };
+
             const handleSubmit = () => {
                 if (!formData.mood || !formData.trigger || !formData.result) return;
                 
@@ -74,6 +113,11 @@
                     id: Date.now(),
                     timestamp: new Date().toISOString()
                 };
+                
+                // Send to Google Sheets
+                sendToGoogleSheets(newEntry);
+                
+                // Save locally
                 const updatedEntries = [newEntry, ...entries];
                 setEntries(updatedEntries);
                 saveData(updatedEntries);
@@ -137,6 +181,7 @@
                 const moodCounts = getMoodCount();
                 
                 const reportData = {
+                    userName: userName,
                     summary: {
                         totalEntries: entries.length,
                         dateRange: entries.length > 0 ? {
@@ -170,7 +215,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `mood-tracker-report-${new Date().toISOString().split('T')[0]}.json`;
+                a.download = `mood-tracker-${userName}-${new Date().toISOString().split('T')[0]}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
             };
@@ -178,12 +223,46 @@
             const moodCounts = getMoodCount();
             const patterns = entries.length > 0 ? analyzePatterns() : null;
 
+            if (showNamePrompt) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4 flex items-center justify-center">
+                        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+                            <h1 className="text-3xl font-bold text-gray-800 mb-4">Welcome to Mood Tracker</h1>
+                            <p className="text-gray-600 mb-6">
+                                Your entries will be saved to help track patterns. Please enter an identifier (name, code, or username).
+                            </p>
+                            <p className="text-sm text-gray-500 mb-4">
+                                ⚠️ Your data will be shared with the researcher. Choose how you identify yourself.
+                            </p>
+                            <input
+                                type="text"
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
+                                placeholder="Enter your name or identifier"
+                                className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                onKeyPress={(e) => e.key === 'Enter' && handleNameSubmit()}
+                            />
+                            <button
+                                onClick={handleNameSubmit}
+                                disabled={!userName.trim()}
+                                className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
             return (
                 <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
                     <div className="max-w-4xl mx-auto">
                         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h1 className="text-3xl font-bold text-gray-800">Mood Tracker</h1>
+                                <div>
+                                    <h1 className="text-3xl font-bold text-gray-800">Mood Tracker</h1>
+                                    <p className="text-sm text-gray-600">Tracking as: {userName}</p>
+                                </div>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setShowPatterns(!showPatterns)}
@@ -335,7 +414,7 @@
                             {entries.length === 0 ? (
                                 <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
                                     <p>No entries yet. Click "+ New" to start tracking.</p>
-                                    <p className="text-sm mt-2">Data saves automatically on your device.</p>
+                                    <p className="text-sm mt-2">Data saves locally and sends to Google Sheets.</p>
                                 </div>
                             ) : (
                                 entries.map(entry => (
