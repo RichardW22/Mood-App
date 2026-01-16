@@ -20,7 +20,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
         
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwgWltuktSXbT2bBSpUmsmB-eaifuw5XELaUEIV9EvW-wmL4TAoRLrcloMoXIjVHu_1XQ/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6NxI8HwDT2ug68AWMtilyHhsjt8ZuFYrGWTPknYojECfxNizPQgIOBSOTptDOIofJog/exec';
 
         const MoodTracker = () => {
             const [entries, setEntries] = useState([]);
@@ -95,7 +95,7 @@
                             timestamp: entry.timestamp,
                             mood: entry.mood,
                             trigger: entry.trigger,
-                            result: entry.result,
+                            results: entry.result,
                             notes: entry.notes
                         })
                     });
